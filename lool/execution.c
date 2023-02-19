@@ -72,62 +72,62 @@ void    file_error(void)
 	// g_data.exit_status = 1;
 	exit(EXIT_FAILURE);
 }
-void    exec_here_doc(t_red *red, int output_fd, int input_fd)
-{
-    char    *input;
-
-    while (red && red->type == HERDOC)
-    {
-        output_fd = open("/tmp/.minishell_tmp",
-        O_RDWR | O_CREAT | O_APPEND | O_TRUNC, 0666);
-        if (output_fd == -1)
-            file_error();
-        input = get_next_line(STDIN_FILENO);
-        while (input && strncmp(input, red->filename, ft_strlen(red->filename)) != 0)
-        {
-            write(output_fd, input, ft_strlen(input));
-            input = get_next_line(STDIN_FILENO);
-            if(strchr(input, '$'))
-                input = exp_var_env(input + 1);
-        }
-            red = red->next;
-    }
-    close(output_fd);
-    input_fd = open("/tmp/.minishell_tmp", O_RDONLY, 0);
-    if (input_fd == -1)
-        file_error();
-    dup2(input_fd, 0);
-    close(input_fd);
-}
-
-// void	exec_here_doc(t_red *red, int output_fd, int input_fd)
+// void    exec_here_doc(t_red *red, int output_fd, int input_fd)
 // {
-// 	char	*line;
-// 	int		fds[2];
+//     char    *input;
 
-// 	while (red && red->type == HERDOC)
-// 	{
-// 		close(fds[1]);
-// 		close(fds[0]);
-// 		if (pipe(fds) < 0)
-// 			file_error();
-// 		while (1)
-// 		{
-// 			write(1, "> ", 2);
-// 			line = readline("");
-// 			if (strncmp(line, red->filename, ft_strlen(line)-1) == 0)
-// 				break;
-// 			if(strchr(line, '$'))
-// 				line = exp_var_env(line + 1);
-// 			write(fds[1], line, ft_strlen(line));
-// 			write(fds[1], "\n", 1);
-// 		}
-// 	 	red = red->next;
-// 	}
-// 	close(fds[1]);
-// 	dup2(fds[0], 0);
-// 	close(fds[0]);
+//     while (red && red->type == HERDOC)
+//     {
+//         output_fd = open("/tmp/.minishell_tmp",
+//         O_RDWR | O_CREAT | O_APPEND | O_TRUNC, 0666);
+//         if (output_fd == -1)
+//             file_error();
+//         input = get_next_line(STDIN_FILENO);
+//         while (input && strncmp(input, red->filename, ft_strlen(red->filename)) != 0)
+//         {
+//             write(output_fd, input, ft_strlen(input));
+//             input = get_next_line(STDIN_FILENO);
+//             if(strchr(input, '$'))
+//                 input = exp_var_env(input + 1);
+//         }
+//             red = red->next;
+//     }
+//     close(output_fd);
+//     input_fd = open("/tmp/.minishell_tmp", O_RDONLY, 0);
+//     if (input_fd == -1)
+//         file_error();
+//     dup2(input_fd, 0);
+//     close(input_fd);
 // }
+
+void	exec_here_doc(t_red *red, int output_fd, int input_fd)
+{
+	char	*line;
+	int		fds[2];
+
+	while (red && red->type == HERDOC)
+	{
+		close(fds[1]);
+		close(fds[0]);
+		if (pipe(fds) < 0)
+			file_error();
+		while (1)
+		{
+			write(1, "> ", 2);
+			line = readline("");
+			if (strncmp(line, red->filename, ft_strlen(line)-1) == 0)
+				break;
+			if(strchr(line, '$'))
+				line = exp_var_env(line + 1);
+			write(fds[1], line, ft_strlen(line));
+			write(fds[1], "\n", 1);
+		}
+	 	red = red->next;
+	}
+	close(fds[1]);
+	dup2(fds[0], 0);
+	close(fds[0]);
+}
 
 void    exec_redap(t_red *red, int output_fd, int input_fd)
 {
